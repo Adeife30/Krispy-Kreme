@@ -1,13 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { AppBar, Toolbar, Typography, Button, Box, CssBaseline, Drawer } from '@mui/material';
-import React from 'react';
+import { AppBar, Toolbar, Typography, Button, Box, CssBaseline, Drawer, List, ListItem, ListItemText } from '@mui/material';
+import React, { useState } from 'react';
 
 const drawerWidth = 240; // Width of the left sidebar
 
 const HomePage = () => {
   const router = useRouter();
+  const [userRole, setUserRole] = useState(null); // Replace with actual role fetching logic
 
   const handleLoginClick = () => {
     router.push('/login');
@@ -15,6 +16,10 @@ const HomePage = () => {
 
   const handleRegisterClick = () => {
     router.push('/register');
+  };
+
+  const handlePageNavigation = (path) => {
+    router.push(path);
   };
 
   return (
@@ -36,6 +41,18 @@ const HomePage = () => {
             Krispy Kreme
           </Typography>
         </Box>
+        {/* Add navigation options */}
+        <List>
+          <ListItem button onClick={() => handlePageNavigation('/')}>
+            <ListItemText primary="Home" />
+          </ListItem>
+          <ListItem button onClick={() => handlePageNavigation('/customer')}>
+            <ListItemText primary="Customer Page" />
+          </ListItem>
+          <ListItem button onClick={() => handlePageNavigation('/manager')}>
+            <ListItemText primary="Manager Dashboard" />
+          </ListItem>
+        </List>
       </Drawer>
 
       {/* Main Content */}

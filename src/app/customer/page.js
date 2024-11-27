@@ -1,111 +1,67 @@
-'use client';
+// app/customer/page.js
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, CardContent, CardActions, Button } from '@mui/material';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardMedia, Typography, Button, Grid } from "@mui/material";
 
-
-const PRODUCTS_API_URL = '/api/products';
-const WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY&units=metric';
-
-const CustomerPage = () => {
+export default function CustomerPage() {
   const [products, setProducts] = useState([]);
   const [weather, setWeather] = useState(null);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch products from the backend
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(PRODUCTS_API_URL);
-        if (!res.ok) throw new Error('Failed to fetch products');
-        const data = await res.json();
-        setProducts(data.products || []); // Assumes products come under `data.products`
-      } catch (err) {
-        setError('Could not load products. Please try again later.');
-      }
-    };
+    async function fetchProducts() {
+      const response = await fetch("/api/products");
+      const data = await response.json();
+      setProducts(data);
+    }
 
-    // Fetch weather data
-    const fetchWeather = async () => {
-      try {
-        const res = await fetch(WEATHER_API_URL);
-        if (!res.ok) throw new Error('Failed to fetch weather');
-        const data = await res.json();
-        setWeather({
-          temperature: data.main.temp,
-          description: data.weather[0].description,
-          city: data.name,
-        });
-      } catch (err) {
-        setError('Could not load weather information.');
-      }
-    };
+    async function fetchWeather() {
+      const apiKey = "YOUR_WEATHER_API_KEY"; // Replace with your API key
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=YOUR_CITY&appid=${apiKey}&units=metric`);
+      const data = await response.json();
+      setWeather(data);
+    }
 
     fetchProducts();
     fetchWeather();
   }, []);
 
-  const handleAddToCart = (product) => {
-    // Placeholder function for adding items to the cart
-    console.log(`Added ${product.title} to the cart`);
-    alert(`${product.title} has been added to your cart!`);
-  };
-
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Weather Widget */}
-      {weather && (
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
-          <Typography variant="h6">
-            Weather in {weather.city}: {weather.temperature}°C, {weather.description}
-          </Typography>
-        </Box>
-      )}
+    <div>
+      <Typography variant="h4" gutterBottom>
+        Available Products
+      </Typography>
 
-      {error && (
-        <Typography color="error" sx={{ mb: 3 }}>
-          {error}
+      {/* Weather Display */}
+      {weather && (
+        <Typography variant="subtitle1">
+          Current Weather: {weather.main.temp}°C, {weather.weather[0].description}
         </Typography>
       )}
 
-      {/* Product Listing */}
-      <Grid container spacing={3}>
+      {/* Product Cards */}
+      <Grid container spacing={2}>
         {products.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product._id}>
             <Card>
               <CardMedia
                 component="img"
                 height="140"
-                image={product.image || '/placeholder.png'} // Default placeholder image
+                image={product.image}
                 alt={product.title}
               />
               <CardContent>
-                <Typography variant="h6" component="div">
-                  {product.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {product.description}
-                </Typography>
-                <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold' }}>
-                  ${product.price.toFixed(2)}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleAddToCart(product)}
-                >
+                <Typography variant="h6">{product.title}</Typography>
+                <Typography variant="body2">{product.description}</Typography>
+                <Typography variant="h5">${product.price.toFixed(2)}</Typography>
+                <Button variant="contained" color="primary">
                   Add to Cart
                 </Button>
-              </CardActions>
+              </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </div>
   );
-};
-
-export default CustomerPage;
+}
