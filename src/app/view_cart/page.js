@@ -1,14 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
-import { useCart } from '../../context/CartContext';
 
-const PutInCart = () => {
-  const { cart } = useCart();
+const ViewCartPage = () => {
+  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Calculate total price
-  const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  useEffect(() => {
+    async function fetchCart() {
+      try {
+        const response = await fetch('/api/viewCart?userId=guest'); // Replace 'guest' with dynamic user ID
+        const data = await response.json();
+        setCart(data);
+      } catch (error) {
+        console.error("Error fetching cart data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCart();
+  }, []);
+
+  const totalPrice = cart.reduce((total, item) => {
+    const itemTotal = item.price ? item.price * item.quantity : 0;
+    return total + itemTotal;
+  }, 0);
+  
+  if (loading) {
+    return <Typography align="center">Loading your cart...</Typography>;
+  }
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -32,11 +54,12 @@ const PutInCart = () => {
             </TableHead>
             <TableBody>
               {cart.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>€{item.price.toFixed(2)}</TableCell>
+                <TableRow key={item._id}>
+                  <TableCell>{item.pname}</TableCell>
+                  <TableCell>€{item.price ? item.price.toFixed(2) : "N/A"}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
-                  <TableCell>€{(item.price * item.quantity).toFixed(2)}</TableCell>
+                  <TableCell>€{item.price ? (item.price * item.quantity).toFixed(2) : "0.00"}</TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
@@ -53,4 +76,4 @@ const PutInCart = () => {
   );
 };
 
-export default PutInCart;
+export default ViewCartPage;

@@ -1,77 +1,56 @@
-export async function GET(req, res) {
+import { MongoClient } from "mongodb";
 
+export async function POST(req) {
+  const body = await req.json(); // Parse JSON payload
+  const { name, email, password, role } = body;
 
-    // Make a note we are on
-  
-    // the api. This goes to the console.
-  
-    console.log("in the api page")
-  
-  
-  
-    // get the values
-  
-    // that were sent across to us.
-  
-    const { searchParams } = new URL(req.url)
-  
-    const email = searchParams.get('email')
-  
-    const pass = searchParams.get('pass')
-  
-  
-    console.log(email);
-  
-    console.log(pass);
-  
-  
-  
-   // =================================================
-  
-    const { MongoClient } = require('mongodb');
-  
-  
-    const URI = 'mongodb+srv://Adeife:olIIfuj4aLEjYytI@krispy-kreme.rhrln.mongodb.net/?retryWrites=true&w=majority&appName=Krispy-kreme';
-  
-    const client = new MongoClient(url);
-  
-   
-  
-   
-  
-    const dbName = 'Krispy'; // database name
-  
-  
+  // Validate required fields
+  if (!name || !email || !password || !role) {
+    return new Response(
+      JSON.stringify({ error: "All fields are required" }),
+      { status: 400 }
+    );
+  }
+
+  const URI = "mongodb+srv://Adeife:UxluFsxWHIygBnef@krispy-kreme.rhrln.mongodb.net/?retryWrites=true&w=majority";
+  const client = new MongoClient(URI);
+  const dbName = "Krispy";
+
+  try {
+    // Connect to MongoDB
     await client.connect();
-  
-    console.log('Connected successfully to server');
-  
+    console.log("Connected to MongoDB");
+
     const db = client.db(dbName);
-  
-    const collection = db.collection('user'); // collection name
-  
-  
-  
-    const findResult = await collection.insertOne({"username":email})
-  
+    const usersCollection = db.collection("users");
 
-  
-  
-    
- 
-  
+    // Check if the email already exists
+    const existingUser = await usersCollection.findOne({ email });
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ error: "Email already registered" }),
+        { status: 409 }
+      );
+    }
 
-  
-  
-  
-   //==========================================================
-  
-  
-  
-  
-    // at the end of the process we need to send something back.
-  
-    return Response.json({})
+    // Insert the new user
+    const result = await usersCollection.insertOne({ name, email, password, role });
+    console.log("User registered:", result.insertedId);
 
-
+    return new Response(
+      JSON.stringify({
+        message: "User registered successfully",
+        id: result.insertedId,
+      }),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error during registration:", error);
+    return new Response(
+      JSON.stringify({ error: "Internal Server Error" }),
+      { status: 500 }
+    );
+  } finally {
+    await client.close();
+  }
 }

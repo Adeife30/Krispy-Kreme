@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TextField, Button, Container, Typography, Grid } from '@mui/material';
+import { TextField, Button, Container, Typography, Grid, Select, MenuItem } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -26,7 +25,6 @@ export default function RegisterPage() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -44,7 +42,7 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // Redirect user after successful registration
+        alert('Registration successful! Redirecting to login...');
         router.push('/login');
       } else {
         setError(data.error || 'Something went wrong. Please try again.');
@@ -102,14 +100,17 @@ export default function RegisterPage() {
           </Grid>
 
           <Grid item xs={12}>
-            <TextField
-              label="Role (customer or manager)"
+            <Select
               variant="outlined"
               fullWidth
+              required
               name="role"
               value={formData.role}
               onChange={handleChange}
-            />
+            >
+              <MenuItem value="customer">Customer</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
+            </Select>
           </Grid>
 
           {error && (
