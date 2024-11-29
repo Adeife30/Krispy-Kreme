@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Card, CardMedia, CardContent, Typography, Button, IconButton, Badge, Box } from '@mui/material';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { useRouter } from 'next/navigation';
+import { Container, Typography, Grid, Card, CardMedia, CardContent, Button, Box } from '@mui/material';
 
 const mockProducts = [
   {
@@ -33,40 +31,47 @@ const mockProducts = [
 ];
 
 export default function CustomerPage() {
-  const router = useRouter();
-  const [cart, setCart] = useState([]);
+  const [weather, setWeather] = useState(null);
 
-  // Load cart from localStorage on mount
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-    setCart(storedCart);
+    const fetchWeather = async () => {
+      const API_KEY = 'ac55b0a25e2c9dfa9c83bfb1882f68d6'; // Replace with your API key
+      const city = 'Dublin'; // Replace with your desired city
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data) {
+          setWeather({
+            city: data.name,
+            temperature: data.main.temp,
+            description: data.weather[0].description,
+            icon: `https://openweathermap.org/img/wn/${data.weather[0].icon}.png`,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+      }
+    };
+
+    fetchWeather();
   }, []);
-
-  const handleAddToCart = (product) => {
-    const updatedCart = [...cart];
-    const existingItem = updatedCart.find((item) => item.id === product.id);
-
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      updatedCart.push({ ...product, quantity: 1 });
-    }
-
-    setCart(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-  };
-
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <Container>
-      {/* Cart Icon */}
-      <Box sx={{ position: 'absolute', top: 20, left: 20 }}>
-        <IconButton color="primary" onClick={() => router.push('/view_cart')}>
-          <Badge badgeContent={cartCount} color="secondary">
-            <ShoppingCartIcon />
-          </Badge>
-        </IconButton>
+      {/* Weather Info */}
+      <Box sx={{ textAlign: 'center', my: 2 }}>
+        {weather ? (
+          <>
+            <Typography variant="h6">
+              Current Weather in {weather.city}: {weather.temperature}°C, {weather.description}
+            </Typography>
+            <img src={weather.icon} alt={weather.description} />
+          </>
+        ) : (
+          <Typography variant="h6">Loading weather data...</Typography>
+        )}
       </Box>
 
       {/* Product Listing */}
@@ -92,7 +97,6 @@ export default function CustomerPage() {
                   variant="contained"
                   color="primary"
                   fullWidth
-                  onClick={() => handleAddToCart(product)}
                   sx={{ mt: 2 }}
                 >
                   Add to Cart
