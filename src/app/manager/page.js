@@ -1,72 +1,75 @@
-// app/manager/page.js
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Typography, Table, TableBody, TableCell, TableHead, TableRow, Card, CardContent, Grid } from "@mui/material";
+import React, { useEffect, useState } from 'react';
+import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, CircularProgress, Box } from '@mui/material';
 
-export default function ManagerPage() {
+const ManagerPage = () => {
   const [orders, setOrders] = useState([]);
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchOrders() {
-      const response = await fetch("/api/orders");
-      const data = await response.json();
-      setOrders(data);
-      setTotalOrders(data.length);
-      setTotalRevenue(data.reduce((sum, order) => sum + order.totalCost, 0));
-    }
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('/api/orders');
+        const data = await res.json();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOrders();
   }, []);
 
   return (
-    <div>
+    <Container>
       <Typography variant="h4" gutterBottom>
         Manager Dashboard
       </Typography>
-
-      {/* Summary Cards */}
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Total Orders</Typography>
-              <Typography variant="h4">{totalOrders}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Total Revenue</Typography>
-              <Typography variant="h4">${totalRevenue.toFixed(2)}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Orders Table */}
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Order ID</TableCell>
-            <TableCell>Products</TableCell>
-            <TableCell>Order Time</TableCell>
-            <TableCell>Customer</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order._id}>
-              <TableCell>{order._id}</TableCell>
-              <TableCell>{order.products.map((p) => p.name).join(", ")}</TableCell>
-              <TableCell>{new Date(order.orderTime).toLocaleString()}</TableCell>
-              <TableCell>{order.customerName}</TableCell>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : orders.length === 0 ? (
+        <Typography variant="h6" align="center" color="textSecondary">
+          No orders found.
+        </Typography>
+      ) : (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Order ID</TableCell>
+              <TableCell>Customer</TableCell>
+              <TableCell>Products</TableCell>
+              <TableCell>Total</TableCell>
+              <TableCell>Time</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow key={order._id}>
+                <TableCell>{order._id}</TableCell>
+                <TableCell>
+                  {order.customerName} <br /> {order.customerEmail}
+                </TableCell>
+                <TableCell>
+                  {order.products.map((product, index) => (
+                    <div key={index}>
+                      {product.quantity}x {product.name}
+                    </div>
+                  ))}
+                </TableCell>
+                <TableCell>€{order.total.toFixed(2)}</TableCell>
+                <TableCell>{new Date(order.timestamp).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Container>
   );
-}
+};
+
+export default ManagerPage;

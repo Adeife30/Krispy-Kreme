@@ -1,46 +1,28 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
-const ViewCartPage = () => {
+export default function ViewCartPage() {
+  const router = useRouter();
   const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
 
+  // Fetch cart from localStorage when the component mounts
   useEffect(() => {
-    async function fetchCart() {
-      try {
-        const response = await fetch('/api/viewCart?userId=guest'); // Replace 'guest' with dynamic user ID
-        const data = await response.json();
-        setCart(data);
-      } catch (error) {
-        console.error("Error fetching cart data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCart();
+    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    setCart(storedCart);
   }, []);
 
-  const totalPrice = cart.reduce((total, item) => {
-    const itemTotal = item.price ? item.price * item.quantity : 0;
-    return total + itemTotal;
-  }, 0);
-  
-  if (loading) {
-    return <Typography align="center">Loading your cart...</Typography>;
-  }
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" align="center" gutterBottom>
+    <Container>
+      <Typography variant="h4" gutterBottom>
         Your Cart
       </Typography>
       {cart.length === 0 ? (
-        <Typography variant="h6" align="center">
-          Your cart is empty.
-        </Typography>
+        <Typography variant="h6">Your cart is empty.</Typography>
       ) : (
         <>
           <Table>
@@ -54,26 +36,29 @@ const ViewCartPage = () => {
             </TableHead>
             <TableBody>
               {cart.map((item) => (
-                <TableRow key={item._id}>
-                  <TableCell>{item.pname}</TableCell>
-                  <TableCell>€{item.price ? item.price.toFixed(2) : "N/A"}</TableCell>
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>€{item.price.toFixed(2)}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
-                  <TableCell>€{item.price ? (item.price * item.quantity).toFixed(2) : "0.00"}</TableCell>
-
+                  <TableCell>€{(item.price * item.quantity).toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           <Typography variant="h6" align="right" sx={{ mt: 2 }}>
-            Total: €{totalPrice.toFixed(2)}
+            Total: €{total.toFixed(2)}
           </Typography>
-          <Button variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 3 }}
+            onClick={() => router.push('/checkout')}
+          >
             Proceed to Checkout
           </Button>
         </>
       )}
-    </Box>
+    </Container>
   );
-};
-
-export default ViewCartPage;
+}

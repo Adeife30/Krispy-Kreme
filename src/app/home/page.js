@@ -1,82 +1,58 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  CssBaseline,
-} from '@mui/material';
-import React from 'react';
+import { Box, Typography, Button, Container } from '@mui/material';
+import { useEffect, useState } from 'react';
 
-const HomePage = () => {
+export default function HomePage() {
   const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handlePageNavigation = (path) => {
-    router.push(path);
+  useEffect(() => {
+    // Simulate session check (replace with actual session validation logic)
+    const userSession = localStorage.getItem('user'); // Or fetch from an API
+    setIsLoggedIn(!!userSession);
+  }, []);
+
+  const handleLoginClick = () => {
+    router.push('/login');
+  };
+
+  const handleRegisterClick = () => {
+    router.push('/register');
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <CssBaseline />
-
-      {/* Navbar */}
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6" noWrap>
-            Krispy Kreme
-          </Typography>
+    <Container>
+      <Box sx={{ textAlign: 'center', mt: 8 }}>
+        <Typography variant="h4" gutterBottom>
+          Welcome to Krispy Kreme
+        </Typography>
+        <Typography variant="subtitle1" sx={{ mb: 4 }}>
+          Delicious donuts, just a click away!
+        </Typography>
+        {!isLoggedIn ? (
           <Box>
-            {/* Add Customer Page and Manager Dashboard to the Navbar */}
-            <Button color="inherit" onClick={() => handlePageNavigation('/customer')}>
-              Customer Page
+            <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+              Please register or log in to start exploring our products.
+            </Typography>
+            <Button variant="contained" color="primary" onClick={handleLoginClick} sx={{ mr: 2 }}>
+              Log In
             </Button>
-            <Button color="inherit" onClick={() => handlePageNavigation('/manager')}>
-              Manager Dashboard
-            </Button>
-            <Button color="inherit" onClick={() => handlePageNavigation('/login')}>
-              Login
-            </Button>
-            <Button color="inherit" onClick={() => handlePageNavigation('/register')}>
+            <Button variant="outlined" color="secondary" onClick={handleRegisterClick}>
               Register
             </Button>
           </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Main Content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          padding: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          mt: 8, // Adjust margin to account for fixed AppBar height
-        }}
-      >
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 'bold',
-            color: '#FF5733',
-          }}
-        >
-          Krispy Kreme
-        </Typography>
-        <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-          Welcome to the world of delicious donuts and coffee.
-        </Typography>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.push('/customer')}
+          >
+            View Products
+          </Button>
+        )}
       </Box>
-    </Box>
+    </Container>
   );
-};
-
-export default HomePage;
-
-
+}
