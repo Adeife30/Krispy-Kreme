@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Card, CardMedia, CardContent, Button, Box } from '@mui/material';
+import { IconButton, Badge } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useRouter } from 'next/navigation';
 
 const mockProducts = [
   {
@@ -31,47 +34,43 @@ const mockProducts = [
 ];
 
 export default function CustomerPage() {
-  const [weather, setWeather] = useState(null);
+  const router = useRouter();
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      const API_KEY = 'ac55b0a25e2c9dfa9c83bfb1882f68d6'; // Replace with your API key
-      const city = 'Dublin'; // Replace with your desired city
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`;
-
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data) {
-          setWeather({
-            city: data.name,
-            temperature: data.main.temp,
-            description: data.weather[0].description,
-            icon: `https://openweathermap.org/img/wn/${data.weather[0].icon}.png`,
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-      }
-    };
-
-    fetchWeather();
+    // Fetch cart items count from localStorage or API
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalCount = cart.reduce((total, item) => total + item.quantity, 0);
+    setCartCount(totalCount);
   }, []);
+
+  const handleAddToCart = (product) => {
+    // Add product to cart in localStorage
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find((item) => item.id === product.id);
+
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    setCartCount(cart.reduce((total, item) => total + item.quantity, 0)); // Update cart count
+  };
 
   return (
     <Container>
-      {/* Weather Info */}
-      <Box sx={{ textAlign: 'center', my: 2 }}>
-        {weather ? (
-          <>
-            <Typography variant="h6">
-              Current Weather in {weather.city}: {weather.temperature}°C, {weather.description}
-            </Typography>
-            <img src={weather.icon} alt={weather.description} />
-          </>
-        ) : (
-          <Typography variant="h6">Loading weather data...</Typography>
-        )}
+      {/* Cart Icon */}
+      <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
+        <IconButton
+          color="primary"
+          onClick={() => router.push('/view_cart')} // Navigate to Cart Page
+        >
+          <Badge badgeContent={cartCount} color="secondary">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
       </Box>
 
       {/* Product Listing */}
@@ -98,6 +97,7 @@ export default function CustomerPage() {
                   color="primary"
                   fullWidth
                   sx={{ mt: 2 }}
+                  onClick={() => handleAddToCart(product)}
                 >
                   Add to Cart
                 </Button>
@@ -109,3 +109,4 @@ export default function CustomerPage() {
     </Container>
   );
 }
+
