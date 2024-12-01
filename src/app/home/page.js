@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Box, Typography, Button, Container } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function HomePage() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Simulate session check (replace with actual session validation logic)
-    const userSession = localStorage.getItem('user'); // Or fetch from an API
+    const userSession = localStorage.getItem('user');
     setIsLoggedIn(!!userSession);
   }, []);
 
@@ -24,6 +25,31 @@ export default function HomePage() {
 
   return (
     <Container>
+      {/* Navbar */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Krispy Kreme
+          </Typography>
+          <Link href="/" passHref>
+            <Button color="inherit">Home</Button>
+          </Link>
+          <Link href="/manager" passHref>
+            <Button color="inherit">Manager</Button>
+          </Link>
+          <Link href="/customer" passHref>
+            <Button color="inherit">Products</Button>
+          </Link>
+          <Link href="/view_cart" passHref>
+            <Button color="inherit">View Cart</Button>
+          </Link>
+          <Link href="/checkout" passHref>
+            <Button color="inherit">Checkout</Button>
+          </Link>
+        </Toolbar>
+      </AppBar>
+
+      {/* Welcome Section */}
       <Box sx={{ textAlign: 'center', mt: 8 }}>
         <Typography variant="h4" gutterBottom>
           Welcome to Krispy Kreme
@@ -36,7 +62,12 @@ export default function HomePage() {
             <Typography variant="h6" color="error" sx={{ mb: 2 }}>
               Please register or log in to start exploring our products.
             </Typography>
-            <Button variant="contained" color="primary" onClick={handleLoginClick} sx={{ mr: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleLoginClick}
+              sx={{ mr: 2 }}
+            >
               Log In
             </Button>
             <Button variant="outlined" color="secondary" onClick={handleRegisterClick}>

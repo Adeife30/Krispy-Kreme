@@ -1,16 +1,15 @@
-import { getCustomSession } from '../sessionCode.js';
+import { getCustomSession } from "../../sessionCode";
 
-export async function GET(req) {
-  let session = await getCustomSession();
+export async function POST(req) {
+  const { email, role } = await req.json(); // Expecting email and role from frontend
+  if (!email || !role) {
+    return new Response(JSON.stringify({ error: "Missing email or role" }), { status: 400 });
+  }
 
-  // Save data to the session
-  session.role = 'customer'; // Example: Set role
-  session.email = 'mymail@mail.com'; // Example: Set email
-
-  // Save the session changes
+  const session = await getCustomSession();
+  session.email = email;
+  session.role = role;
   await session.save();
 
-  console.log('Session data saved:', { role: session.role, email: session.email });
-
-  return new Response(JSON.stringify({ message: 'Session data saved' }), { status: 200 });
+  return new Response(JSON.stringify({ message: "Session data saved" }), { status: 200 });
 }

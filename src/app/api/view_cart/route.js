@@ -5,10 +5,7 @@ export async function GET(req) {
   const userId = searchParams.get("userId");
 
   if (!userId) {
-    return new Response(
-      JSON.stringify({ error: "User ID is required" }),
-      { status: 400 }
-    );
+    return new Response(JSON.stringify({ error: "Missing userId" }), { status: 400 });
   }
 
   const uri = "mongodb+srv://Adeife:UxluFsxWHIygBnef@krispy-kreme.rhrln.mongodb.net/?retryWrites=true&w=majority";
@@ -17,11 +14,9 @@ export async function GET(req) {
   try {
     await client.connect();
     const db = client.db("Krispy");
-    const collection = db.collection("shopping_cart");
+    const cartCollection = db.collection("shopping_cart");
 
-    // Fetch items for the specified user
-    const cartItems = await collection.find({ userId }).toArray();
-
+    const cartItems = await cartCollection.find({ userId }).toArray();
     return new Response(JSON.stringify(cartItems), { status: 200 });
   } catch (error) {
     console.error("Error fetching cart items:", error);

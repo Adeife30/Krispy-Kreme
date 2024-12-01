@@ -1,16 +1,16 @@
-import { getCustomSession } from '../sessionCode.js';
+import { getCustomSession } from "../saveData/sessionCode";
 
 export async function GET(req) {
-  let session = await getCustomSession();
+  const session = await getCustomSession();
 
-  // Retrieve data from the session
-  let customersRole = session.role;
-  let email = session.email;
+  // Retrieve session data
+  const role = session.role || null;
+  const email = session.email || null;
 
-  console.log('Retrieved session data:', { role: customersRole, email });
+  console.log("Session data retrieved:", { role, email });
 
   return new Response(
-    JSON.stringify({ role: customersRole, email }),
+    JSON.stringify({ role, email }),
     { status: 200 }
   );
 }

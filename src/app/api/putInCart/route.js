@@ -7,7 +7,7 @@ export async function GET(req) {
 
   if (!pname || !userId) {
     return new Response(
-      JSON.stringify({ error: "Missing required parameters: pname or userId" }),
+      JSON.stringify({ error: "Missing parameters" }),
       { status: 400 }
     );
   }
@@ -21,47 +21,27 @@ export async function GET(req) {
     const cartCollection = db.collection("shopping_cart");
     const productsCollection = db.collection("products");
 
-    // Check if the product exists and get its price
     const product = await productsCollection.findOne({ name: pname });
     if (!product) {
-      return new Response(
-        JSON.stringify({ error: `Product '${pname}' not found` }),
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ error: "Product not found" }), { status: 404 });
     }
 
     const price = product.price;
 
-    // Check if the item is already in the user's cart
     const existingItem = await cartCollection.findOne({ userId, pname });
-
     if (existingItem) {
-      // Update quantity and price if the item already exists
       await cartCollection.updateOne(
         { userId, pname },
         { $set: { price }, $inc: { quantity: 1 } }
       );
     } else {
-      // Insert a new item into the cart if it doesn't exist
-      await cartCollection.insertOne({
-        userId,
-        pname,
-        price,
-        quantity: 1,
-        addedAt: new Date(), // Optional: Add timestamp for when the item was added
-      });
+      await cartCollection.insertOne({ userId, pname, price, quantity: 1 });
     }
 
-    return new Response(
-      JSON.stringify({ message: `Product '${pname}' added to cart successfully` }),
-      { status: 200 }
-    );
+    return new Response(JSON.stringify({ message: `Product '${pname}' added to cart successfully` }), { status: 200 });
   } catch (error) {
     console.error("Error adding to cart:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal Server Error" }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   } finally {
     await client.close();
   }

@@ -1,4 +1,4 @@
-import { getCustomSession } from '../sessionCode.js';
+import { getCustomSession } from '../saveData/sessionCode.js';
 
 export async function GET(req) {
   const session = await getCustomSession();
